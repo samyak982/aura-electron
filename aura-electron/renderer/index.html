@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:;">
+<title>Aura</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass:rgba(8,14,22,0.42);--glass2:rgba(12,20,32,0.52);
+  --gb:rgba(255,255,255,0.04);--gb2:rgba(255,255,255,0.08);
+  --blur:blur(22px) saturate(160%);--blur2:blur(14px) saturate(140%);
+  --border:rgba(61,217,235,0.10);--border2:rgba(61,217,235,0.22);
+  --accent:#3dd9eb;--adim:rgba(61,217,235,0.08);--adim2:rgba(61,217,235,0.14);
+  --text:#ddeef5;--text2:#7a99a8;--text3:#3d5a68;
+  --green:#3deba8;--red:#eb6060;--amber:#ebbb3d;--purple:#a78bfa;
+  --mono:'Space Mono',monospace;--display:'Syne',sans-serif;
+  --r:10px;--r2:14px;
+}
+html,body{height:100%;background:transparent}
+body{font-family:var(--display);height:100vh;overflow:hidden;display:flex;flex-direction:column;background:linear-gradient(135deg,rgba(5,10,18,0.82) 0%,rgba(8,18,32,0.78) 100%);color:var(--text);-webkit-app-region:no-drag;border-radius:12px;overflow:hidden}
+body.compact{height:46px!important}
+
+/* ── SETUP SCREEN ── */
+.setup-screen{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(4,8,18,0.97) 0%,rgba(6,14,28,0.97) 100%);backdrop-filter:blur(30px)}
+.setup-card{background:rgba(10,18,32,0.98);border:1px solid var(--border2);border-radius:20px;padding:0;width:500px;overflow:hidden}
+.setup-tabs{display:flex;border-bottom:1px solid var(--border)}
+.stab{flex:1;padding:14px 8px;font-family:var(--display);font-weight:700;font-size:11px;cursor:pointer;border:none;background:transparent;color:var(--text3);transition:all 0.15s;text-align:center;border-bottom:2px solid transparent;margin-bottom:-1px}
+.stab:hover{color:var(--text2);background:rgba(255,255,255,0.02)}
+.stab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--adim)}
+.stab .stab-icon{font-size:14px;display:block;margin-bottom:2px}
+.stab .stab-free{font-family:var(--mono);font-size:8px;color:var(--green);background:rgba(61,235,168,0.1);border:1px solid rgba(61,235,168,0.25);border-radius:4px;padding:1px 5px;display:inline-block;margin-top:2px}
+.setup-body{padding:26px 28px}
+.setup-logo{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.setup-logo-orb{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);background:radial-gradient(circle at 35% 35%,rgba(61,217,235,0.3),rgba(61,217,235,0.04));display:flex;align-items:center;justify-content:center}
+.setup-logo-orb::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.setup-title{font-size:20px;font-weight:800;color:var(--accent);letter-spacing:-0.5px}
+.setup-sub{font-family:var(--mono);font-size:9.5px;color:var(--text3);margin-bottom:22px;line-height:1.6}
+.provider-panel{display:none}.provider-panel.active{display:block}
+.setup-label{font-family:var(--mono);font-size:9.5px;color:var(--text2);margin-bottom:6px;display:block}
+.setup-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:12px;padding:9px 12px;outline:none;margin-bottom:6px;letter-spacing:0.5px;transition:border-color 0.15s}
+.setup-input:focus{border-color:var(--accent)}
+.setup-hint{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:16px;line-height:1.7}
+.setup-hint a{color:var(--accent);text-decoration:none;cursor:pointer}
+.setup-hint a:hover{text-decoration:underline}
+.steps{margin-bottom:16px}
+.step{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.step:last-child{border-bottom:none}
+.step-num{width:20px;height:20px;border-radius:50%;background:var(--adim2);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;color:var(--accent);flex-shrink:0;margin-top:1px}
+.step-text{font-family:var(--mono);font-size:9.5px;color:var(--text2);line-height:1.6}
+.step-text code{color:var(--accent);background:var(--adim);padding:1px 5px;border-radius:4px}
+.setup-btn{width:100%;padding:11px;border-radius:var(--r);background:var(--accent);border:none;color:rgba(4,8,18,0.95);font-family:var(--display);font-weight:700;font-size:13px;cursor:pointer;transition:all 0.15s;margin-bottom:8px}
+.setup-btn:hover{background:#5de6f5}.setup-btn:active{transform:scale(0.98)}
+.setup-btn.secondary{background:rgba(255,255,255,0.06);color:var(--text2);border:1px solid var(--border2)}
+.setup-btn.secondary:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+.setup-err{font-family:var(--mono);font-size:10px;color:var(--red);margin-bottom:12px;display:none;padding:8px 10px;background:rgba(235,96,96,0.08);border:1px solid rgba(235,96,96,0.2);border-radius:6px}
+.setup-success{font-family:var(--mono);font-size:10px;color:var(--green);margin-bottom:12px;display:none;padding:8px 10px;background:rgba(61,235,168,0.06);border:1px solid rgba(61,235,168,0.2);border-radius:6px}
+.free-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:20px;border:1px solid rgba(61,235,168,0.3);background:rgba(61,235,168,0.07);color:var(--green);margin-bottom:14px}
+.model-select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:11px;padding:8px 10px;outline:none;margin-bottom:6px;cursor:pointer}
+.model-select option{background:#0a1220;color:var(--text)}
+
+/* ── TITLE BAR ── */
+.titlebar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(4,9,18,0.7);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid var(--border);flex-shrink:0;-webkit-app-region:drag;user-select:none;position:relative;z-index:20}
+.titlebar *{-webkit-app-region:no-drag}
+.logo{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:-0.5px;color:var(--accent)}
+.orb{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--accent);background:radial-gradient(circle at 35% 35%,rgba(61,217,235,0.3),rgba(61,217,235,0.04));display:flex;align-items:center;justify-content:center}
+.orb::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);animation:oa 2.4s ease-in-out infinite}
+@keyframes oa{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(61,217,235,0.5)}50%{opacity:0.5;box-shadow:0 0 0 5px rgba(61,217,235,0)}}
+.tb-sp{flex:1}
+.prot-badge{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:8.5px;padding:2px 8px;border-radius:10px;border:1px solid rgba(61,235,168,0.3);background:rgba(61,235,168,0.06);color:var(--green);cursor:pointer;transition:all 0.15s}
+.prot-badge.off{border-color:rgba(235,96,96,0.3);background:rgba(235,96,96,0.06);color:var(--red)}
+.prot-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.provider-badge{font-family:var(--mono);font-size:8.5px;padding:2px 8px;border-radius:10px;border:1px solid var(--border2);background:var(--adim);color:var(--accent);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.provider-badge:hover{border-color:var(--accent);background:var(--adim2)}
+.wctrl{display:flex;gap:6px;align-items:center}
+.wc{width:12px;height:12px;border-radius:50%;border:none;cursor:pointer;transition:all 0.1s;flex-shrink:0}
+.wc:active{transform:scale(0.88)}
+.wc.close{background:#ff5f57}.wc.close:hover{background:#ff3b30}
+.wc.min{background:#febc2e}.wc.min:hover{background:#f5a623}
+.wc.hide{background:#2ecc71}.wc.hide:hover{background:#27ae60}
+.kbd{display:inline-flex;align-items:center;font-family:var(--mono);font-size:8px;padding:1px 4px;border-radius:4px;border:1px solid var(--border2);color:var(--text3);background:rgba(61,217,235,0.04)}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid var(--border);flex-shrink:0}
+.sp{flex:1}
+.wf{display:flex;align-items:center;gap:2px;height:20px}
+.wb{width:2.5px;border-radius:2px;background:var(--accent);height:3px;opacity:0.3}
+.wb.live{animation:wa 0.7s ease-in-out infinite}
+.wb:nth-child(1){animation-delay:0s}.wb:nth-child(2){animation-delay:0.1s}.wb:nth-child(3){animation-delay:0.2s}.wb:nth-child(4){animation-delay:0.1s}.wb:nth-child(5){animation-delay:0s}
+@keyframes wa{0%,100%{height:3px;opacity:0.3}50%{height:16px;opacity:1}}
+.pill{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-family:var(--mono);font-size:9px;border:1px solid var(--border2);background:var(--adim);color:var(--text2);transition:all 0.2s}
+.pill.on{border-color:var(--green);background:rgba(61,235,168,0.07);color:var(--green)}
+.pill.rec{border-color:var(--red);background:rgba(235,96,96,0.07);color:var(--red);animation:bl 1.4s ease-in-out infinite}
+.pill.ghost{border-color:var(--text3);background:rgba(255,255,255,0.02);color:var(--text3)}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0.5}}
+.sdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r);font-family:var(--display);font-weight:600;font-size:10.5px;cursor:pointer;border:1px solid var(--border2);background:var(--gb);color:var(--text2);backdrop-filter:blur(8px);transition:all 0.12s;white-space:nowrap}
+.btn:hover{background:var(--gb2);color:var(--text);border-color:rgba(61,217,235,0.5)}
+.btn:active{transform:scale(0.96)}
+.btn.primary{background:rgba(61,217,235,0.13);color:var(--accent);border-color:var(--accent)}
+.btn.primary:hover{background:rgba(61,217,235,0.22)}
+.btn.danger{background:rgba(235,96,96,0.09);color:var(--red);border-color:rgba(235,96,96,0.35)}
+.btn.danger:hover{background:rgba(235,96,96,0.18)}
+.btn.am{background:rgba(235,187,61,0.09);color:var(--amber);border-color:rgba(235,187,61,0.35)}
+.btn.sm{padding:3px 7px;font-size:10px}
+
+/* ── MODE BAR ── */
+.mbar{display:flex;align-items:center;gap:5px;padding:5px 12px;background:var(--glass2);backdrop-filter:var(--blur2);-webkit-backdrop-filter:var(--blur2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.ml{font-family:var(--mono);font-size:8.5px;color:var(--text3);letter-spacing:1px;margin-right:3px}
+.mb{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--text3);transition:all 0.12s;font-family:var(--display)}
+.mb:hover{color:var(--text2);border-color:var(--border2)}
+.mb.active{background:var(--adim2);border-color:var(--accent);color:var(--accent)}
+.rc{display:flex;align-items:center;gap:7px;margin-left:auto}
+.cpi{background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:10px;padding:4px 8px;width:180px;outline:none;transition:border-color 0.15s}
+.cpi:focus{border-color:var(--accent)}.cpi::placeholder{color:var(--text3)}
+.tglr{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);cursor:pointer;user-select:none}
+.tgl{width:28px;height:15px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid var(--border2);position:relative;transition:background 0.2s;cursor:pointer;flex-shrink:0}
+.tgl.on{background:rgba(61,217,235,0.42);border-color:var(--accent)}
+.tgl::after{content:'';position:absolute;top:2px;left:2px;width:9px;height:9px;border-radius:50%;background:white;transition:left 0.2s}
+.tgl.on::after{left:15px}
+
+/* ── STEALTH BAR ── */
+.sbar{display:flex;align-items:center;gap:7px;padding:4px 12px;background:rgba(0,4,14,0.55);border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;font-family:var(--mono);font-size:9px;color:var(--text3);flex-wrap:wrap}
+.opsl{-webkit-appearance:none;height:2px;border-radius:1px;background:linear-gradient(to right,var(--accent) 0%,var(--accent) var(--val,95%),rgba(255,255,255,0.1) var(--val,95%));width:70px;outline:none;cursor:pointer;vertical-align:middle}
+.opsl::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--accent);border:1.5px solid #040912}
+
+/* ── MAIN PANELS ── */
+.main{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);overflow:hidden}
+.panel{background:rgba(5,10,20,0.55);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);display:flex;flex-direction:column;overflow:hidden}
+.ph{display:flex;align-items:center;gap:7px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--glass);flex-shrink:0}
+.pht{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);flex:1}
+.phb{font-family:var(--mono);font-size:8.5px;padding:2px 7px;border-radius:9px;background:var(--adim);color:var(--accent);border:1px solid var(--border2)}
+.pb{flex:1;overflow-y:auto;padding:12px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.pb::-webkit-scrollbar{width:3px}.pb::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.tb{margin-bottom:12px}
+.tts{font-family:var(--mono);font-size:8px;color:var(--text3);margin-bottom:3px;letter-spacing:0.5px}
+.tt{font-size:12.5px;line-height:1.7;color:var(--text);background:rgba(61,217,235,0.04);border:1px solid var(--border);border-left:2.5px solid var(--accent);border-radius:var(--r);padding:8px 11px}
+.tt.im{color:var(--text2);border-left-color:var(--text3);font-style:italic;border-style:dashed}
+.tt.mn{border-left-color:var(--amber)}
+.sthumb{width:100%;border-radius:var(--r);border:1px solid var(--border2);margin-bottom:9px;max-height:130px;object-fit:cover;object-position:top;display:block;opacity:0.82;cursor:pointer}
+.sthumb:hover{opacity:1;border-color:var(--accent)}
+.air{background:rgba(8,16,30,0.65);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px;transition:border-color 0.25s}
+.air:hover{border-color:var(--border2)}
+.airh{display:flex;align-items:center;gap:7px;padding:7px 11px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.015)}
+.aiav{width:18px;height:18px;border-radius:50%;background:var(--adim2);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:var(--accent);flex-shrink:0;font-family:var(--mono)}
+.ailbl{font-family:var(--mono);font-size:8.5px;color:var(--text3);letter-spacing:0.5px;flex:1}
+.aits{font-family:var(--mono);font-size:8px;color:var(--text3)}
+.aic{padding:11px 12px;font-size:12.5px;line-height:1.85;color:var(--text);white-space:pre-wrap}
+.aic strong{color:var(--accent);font-weight:600}
+.aic .h{color:var(--accent);font-weight:700;display:block;margin-bottom:2px;font-size:11px;letter-spacing:0.5px}
+.aic .bul{display:block;padding-left:12px;position:relative;margin:1px 0}
+.aic .bul::before{content:'›';position:absolute;left:0;color:var(--accent)}
+.ait{display:flex;align-items:center;gap:8px;padding:12px;color:var(--text3);font-family:var(--mono);font-size:11px}
+.dots{display:flex;gap:3px}
+.dots span{width:3px;height:3px;border-radius:50%;background:var(--accent);animation:dt 1.1s ease-in-out infinite}
+.dots span:nth-child(2){animation-delay:0.18s}.dots span:nth-child(3){animation-delay:0.36s}
+@keyframes dt{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:9px;color:var(--text3);text-align:center;padding:28px}
+.ei{font-size:24px;opacity:0.2}.et{font-size:12.5px;font-weight:600;color:var(--text2)}.es{font-size:10px;font-family:var(--mono);color:var(--text3);max-width:200px;line-height:1.6}
+
+/* ── BOTTOM BAR ── */
+.bbar{padding:8px 12px;border-top:1px solid var(--border);background:var(--glass2);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mi{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--display);font-size:12px;padding:6px 11px;outline:none;transition:border-color 0.15s}
+.mi:focus{border-color:var(--accent)}.mi::placeholder{color:var(--text3)}
+.cbtn{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.12s}
+.cbtn:hover{color:var(--text);border-color:var(--text3)}
+
+/* ── SCREEN PICKER ── */
+.picker-overlay{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:rgba(0,4,16,0.82);backdrop-filter:blur(20px);opacity:0;pointer-events:none;transition:opacity 0.18s}
+.picker-overlay.vis{opacity:1;pointer-events:all}
+.picker-panel{background:rgba(6,12,26,0.97);border:1px solid var(--border2);border-radius:18px;padding:22px 26px;width:600px;max-height:80vh;overflow-y:auto}
+.picker-title{font-size:15px;font-weight:800;color:var(--accent);margin-bottom:4px}
+.picker-sub{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:18px}
+.sources-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.src-item{background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all 0.15s}
+.src-item:hover{border-color:var(--accent);background:var(--adim)}
+.src-item img{width:100%;height:90px;object-fit:cover;display:block;opacity:0.8}
+.src-item:hover img{opacity:1}
+.src-name{font-family:var(--mono);font-size:9px;color:var(--text2);padding:5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── SHORTCUTS OVERLAY ── */
+.overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,4,16,0.75);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);opacity:0;pointer-events:none;transition:opacity 0.18s}
+.overlay.vis{opacity:1;pointer-events:all}
+.spanel{background:rgba(6,12,26,0.97);border:1px solid var(--border2);border-radius:18px;padding:24px 28px;width:540px;max-height:80vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.spanel::-webkit-scrollbar{width:3px}.spanel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.spt{font-size:16px;font-weight:800;color:var(--accent);margin-bottom:3px;letter-spacing:-0.5px}
+.sps{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:20px}
+.scg{margin-bottom:16px}
+.scgt{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--text3);margin-bottom:7px;text-transform:uppercase}
+.scr{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.scr:last-child{border-bottom:none}
+.sck{display:flex;gap:3px;min-width:100px}
+.sk{font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:4px;border:1px solid var(--border2);background:rgba(61,217,235,0.07);color:var(--accent);white-space:nowrap}
+.scd{font-size:11.5px;color:var(--text2);flex:1}
+.info-box{background:rgba(61,235,168,0.06);border:1px solid rgba(61,235,168,0.2);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:9.5px;color:var(--green);line-height:1.7;margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- ── SETUP / PROVIDER SCREEN ── -->
+<div class="setup-screen" id="setup-screen">
+  <div class="setup-card">
+
+    <!-- Provider tabs -->
+    <div class="setup-tabs">
+      <div class="stab active" id="tab-ollama" onclick="switchTab('ollama')">
+        <span class="stab-icon">🦙</span>Ollama
+        <span class="stab-free">FREE · LOCAL</span>
+      </div>
+      <div class="stab" id="tab-groq" onclick="switchTab('groq')">
+        <span class="stab-icon">⚡</span>Groq
+        <span class="stab-free">FREE TIER</span>
+      </div>
+      <div class="stab" id="tab-gemini" onclick="switchTab('gemini')">
+        <span class="stab-icon">💎</span>Gemini
+        <span class="stab-free">FREE TIER</span>
+      </div>
+      <div class="stab" id="tab-openrouter" onclick="switchTab('openrouter')">
+        <span class="stab-icon">🔀</span>OpenRouter
+        <span class="stab-free">FREE MODELS</span>
+      </div>
+    </div>
+
+    <div class="setup-body">
+      <div class="setup-logo"><div class="setup-logo-orb"></div><span class="setup-title">AURA</span></div>
+      <div class="setup-sub">Live AI Assistant — hidden from screen recorders</div>
+
+      <div class="setup-err" id="setup-err"></div>
+      <div class="setup-success" id="setup-ok"></div>
+
+      <!-- ── OLLAMA ── -->
+      <div class="provider-panel active" id="panel-ollama">
+        <div class="free-badge">✓ 100% Free · Runs locally · No internet · No account needed</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text">Download Ollama from <a onclick="openLink('https://ollama.com')">ollama.com</a> and install it</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Open a terminal and run: <code>ollama pull llama3.2</code><br>For vision (screenshot analysis): <code>ollama pull llava</code></div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text">Ollama runs at <code>localhost:11434</code> — no key needed!</div></div>
+        </div>
+        <span class="setup-label">Model</span>
+        <select class="model-select" id="ollama-model">
+          <option value="llama3.2">llama3.2 (3B — fast, good quality)</option>
+          <option value="llama3.1">llama3.1 (8B — better quality)</option>
+          <option value="llava">llava (multimodal — for screenshot analysis)</option>
+          <option value="llava:13b">llava:13b (better vision)</option>
+          <option value="mistral">mistral (7B — fast)</option>
+          <option value="gemma2">gemma2 (Google, good quality)</option>
+          <option value="phi3">phi3 (Microsoft, very fast)</option>
+          <option value="qwen2.5">qwen2.5 (Alibaba, multilingual)</option>
+          <option value="deepseek-r1">deepseek-r1 (reasoning model)</option>
+        </select>
+        <div class="setup-hint" style="margin-top:4px">Run <code>ollama list</code> to see installed models · Pull any model with <code>ollama pull &lt;name&gt;</code></div>
+        <button class="setup-btn" onclick="testAndSave()">Connect to Ollama →</button>
+        <button class="setup-btn secondary" onclick="saveWithoutTest()">Use without testing</button>
+      </div>
+
+      <!-- ── GROQ ── -->
+      <div class="provider-panel" id="panel-groq">
+        <div class="free-badge">✓ Free tier · Very fast (200 req/day free) · Cloud</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text">Sign up free at <a onclick="openLink('https://console.groq.com')">console.groq.com</a></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Go to API Keys → Create API Key</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text">Paste the key below (starts with <code>gsk_</code>)</div></div>
+        </div>
+        <span class="setup-label">Groq API Key</span>
+        <input class="setup-input" id="groq-key" type="password" placeholder="gsk_…" autocomplete="off">
+        <span class="setup-label" style="margin-top:8px">Model</span>
+        <select class="model-select" id="groq-model">
+          <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout 17B — vision ✓, fast (free)</option>
+          <option value="meta-llama/llama-4-maverick-17b-128e-instruct">Llama 4 Maverick 17B — vision ✓, best quality (free)</option>
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B — text only (free)</option>
+          <option value="llama-3.1-8b-instant">Llama 3.1 8B — fastest, text only (free)</option>
+          <option value="mixtral-8x7b-32768">Mixtral 8x7B — coding, text only (free)</option>
+        </select>
+        <button class="setup-btn" style="margin-top:14px" onclick="testAndSave()">Connect to Groq →</button>
+      </div>
+
+      <!-- ── GEMINI ── -->
+      <div class="provider-panel" id="panel-gemini">
+        <div class="free-badge">✓ Free tier · Vision support · 1500 req/day free</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text">Get a free key at <a onclick="openLink('https://aistudio.google.com/app/apikey')">aistudio.google.com</a></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Click "Create API key" — it's instant, no billing needed</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text">Paste the key below (starts with <code>AIza</code>)</div></div>
+        </div>
+        <span class="setup-label">Gemini API Key</span>
+        <input class="setup-input" id="gemini-key" type="password" placeholder="AIzaSy…" autocomplete="off">
+        <span class="setup-label" style="margin-top:8px">Model</span>
+        <select class="model-select" id="gemini-model">
+          <option value="gemini-1.5-flash">Gemini 1.5 Flash — fastest, vision ✓ (free)</option>
+          <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B — ultra fast (free)</option>
+          <option value="gemini-1.5-pro">Gemini 1.5 Pro — best quality, vision ✓ (limited free)</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash — latest (free)</option>
+        </select>
+        <button class="setup-btn" style="margin-top:14px" onclick="testAndSave()">Connect to Gemini →</button>
+      </div>
+
+      <!-- ── OPENROUTER ── -->
+      <div class="provider-panel" id="panel-openrouter">
+        <div class="free-badge">✓ Free models available · Access 100+ models · One key</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text">Sign up free at <a onclick="openLink('https://openrouter.ai')">openrouter.ai</a></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Go to Keys → Create Key (no credit card for free models)</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text">Models tagged <code>:free</code> are completely free</div></div>
+        </div>
+        <span class="setup-label">OpenRouter API Key</span>
+        <input class="setup-input" id="openrouter-key" type="password" placeholder="sk-or-…" autocomplete="off">
+        <span class="setup-label" style="margin-top:8px">Model</span>
+        <select class="model-select" id="openrouter-model">
+          <option value="meta-llama/llama-3.2-11b-vision-instruct:free">Llama 3.2 11B Vision — free, vision ✓</option>
+          <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B — free, fast</option>
+          <option value="google/gemma-2-9b-it:free">Gemma 2 9B — free</option>
+          <option value="mistralai/mistral-7b-instruct:free">Mistral 7B — free</option>
+          <option value="qwen/qwen-2-7b-instruct:free">Qwen 2 7B — free</option>
+          <option value="microsoft/phi-3-mini-128k-instruct:free">Phi-3 Mini — free, fast</option>
+        </select>
+        <button class="setup-btn" style="margin-top:14px" onclick="testAndSave()">Connect to OpenRouter →</button>
+      </div>
+
+    </div><!-- /setup-body -->
+  </div>
+</div>
+
+<!-- TITLE BAR -->
+<div class="titlebar">
+  <div class="logo"><div class="orb"></div>AURA</div>
+  <span style="font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:1px">LIVE&nbsp;AI</span>
+  <div class="tb-sp"></div>
+  <div class="prot-badge" id="prot-badge" onclick="toggleProtection()" title="Screen capture protection">
+    <div class="prot-dot"></div><span id="prot-text">PROTECTED</span>
+  </div>
+  <div class="provider-badge" id="provider-badge" onclick="showSetup()" title="Click to change AI provider">🦙 OLLAMA</div>
+  <div class="wctrl">
+    <button class="wc min"   onclick="window.aura?.minimize()"></button>
+    <button class="wc hide"  onclick="window.aura?.hide()"></button>
+    <button class="wc close" onclick="window.aura?.close()"></button>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="wf" id="wf"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>
+  <div class="pill" id="pill"><div class="sdot"></div><span id="st">IDLE</span></div>
+  <button class="btn primary" id="mbtn" onclick="toggleMic()">🎙 Listen <span class="kbd">Alt+M</span></button>
+  <button class="btn" onclick="takeScreenshot()">📸 Screen <span class="kbd">Alt+S</span></button>
+  <button class="btn" id="gbtn" onclick="toggleGhost()">👁 Ghost <span class="kbd">Alt+G</span></button>
+  <button class="btn" onclick="showSC()">⌨ Keys <span class="kbd">Alt+/</span></button>
+  <button class="btn sm danger" onclick="clearAll()">✕</button>
+  <div class="sp"></div>
+</div>
+
+<!-- MODE BAR -->
+<div class="mbar">
+  <span class="ml">MODE</span>
+  <button class="mb active" onclick="setMode(this,'interview')">🎯 Interview</button>
+  <button class="mb" onclick="setMode(this,'meeting')">📋 Meeting</button>
+  <button class="mb" onclick="setMode(this,'coding')">💻 Coding</button>
+  <button class="mb" onclick="setMode(this,'writing')">✍ Writing</button>
+  <button class="mb" onclick="setMode(this,'general')">🧠 General</button>
+  <div class="rc">
+    <input class="cpi" id="ctx" placeholder="Custom context…">
+    <label class="tglr">
+      <div class="tgl on" id="atgl" onclick="this.classList.toggle('on');autoAnalyze=this.classList.contains('on')"></div>
+      <span>Auto</span>
+    </label>
+  </div>
+</div>
+
+<!-- STEALTH BAR -->
+<div class="sbar">
+  <span>OPACITY</span>
+  <input type="range" class="opsl" id="ops" min="5" max="100" value="95" oninput="setOpUI(this.value)">
+  <span id="opv">95%</span>
+  <span style="margin:0 2px;color:rgba(255,255,255,0.08)">|</span>
+  <span>STEALTH <span class="kbd">Alt+H</span></span>
+  <span>COMPACT <span class="kbd">Alt+C</span></span>
+  <span>HIDE <span class="kbd">Alt+Space</span></span>
+  <span style="margin-left:auto;font-size:8px;color:rgba(61,235,168,0.4)" id="cap-status">📸 ready</span>
+</div>
+
+<!-- PANELS -->
+<div class="main">
+  <div class="panel">
+    <div class="ph"><span class="pht">Live Transcript</span><span class="phb" id="tc">0</span><button class="cbtn" onclick="copyTranscript()">copy all</button></div>
+    <div class="pb" id="tp"><div class="empty" id="te"><div class="ei">🎙</div><div class="et">No audio yet</div><div class="es">Alt+M to start listening</div></div></div>
+  </div>
+  <div class="panel">
+    <div class="ph"><span class="pht">AI Insights</span><span class="phb" id="rc">0</span><button class="cbtn" onclick="copyLast()">copy last</button></div>
+    <div class="pb" id="rp"><div class="empty" id="re"><div class="ei">🧠</div><div class="et">Waiting for input</div><div class="es">AI auto-analyzes as you speak</div></div></div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bbar">
+  <input class="mi" id="mi" placeholder="Type a question… (Enter to send · Alt+Enter to analyze transcript)" onkeydown="hInp(event)">
+  <button class="btn primary" onclick="analyzeManual()">Ask ↵</button>
+  <button class="btn" onclick="analyzeNow()">⚡ Now <span class="kbd">Alt+K</span></button>
+</div>
+
+<!-- SCREEN PICKER -->
+<div class="picker-overlay" id="picker" onclick="if(event.target===this)hidePicker()">
+  <div class="picker-panel">
+    <div class="picker-title">📸 Select Screen to Capture</div>
+    <div class="picker-sub">Choose which screen or window to analyze</div>
+    <div class="sources-grid" id="sources-grid"></div>
+    <button class="btn sm" onclick="hidePicker()">Cancel</button>
+  </div>
+</div>
+
+<!-- SHORTCUTS OVERLAY -->
+<div class="overlay" id="ov" onclick="if(event.target===this)hideSC()">
+  <div class="spanel">
+    <div class="spt">⌨ Keyboard Shortcuts</div>
+    <div class="sps">Global shortcuts work even when Aura is hidden · Esc to close</div>
+    <div class="scg">
+      <div class="scgt">Window</div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">Space</span></div><div class="scd">Show / hide Aura window</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">H</span></div><div class="scd">Stealth mode</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">G</span></div><div class="scd">Ghost mode</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">C</span></div><div class="scd">Compact mode</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">[</span></div><div class="scd">Opacity −5%</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">]</span></div><div class="scd">Opacity +5%</div></div>
+    </div>
+    <div class="scg">
+      <div class="scgt">Recording &amp; Analysis</div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">M</span></div><div class="scd">Toggle microphone</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">S</span></div><div class="scd">Take screenshot</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">K</span></div><div class="scd">Analyze transcript now</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Enter</span></div><div class="scd">Send typed question</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">Enter</span></div><div class="scd">Analyze transcript + typed text</div></div>
+    </div>
+    <div class="scg">
+      <div class="scgt">AI Modes</div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">1–5</span></div><div class="scd">Switch AI mode (Interview/Meeting/Coding/Writing/General)</div></div>
+    </div>
+    <div class="scg">
+      <div class="scgt">Utilities</div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">A</span></div><div class="scd">Toggle auto-analyze</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">L</span></div><div class="scd">Copy last AI response</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">T</span></div><div class="scd">Copy full transcript</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">Del</span></div><div class="scd">Clear everything</div></div>
+      <div class="scr"><div class="sck"><span class="sk">Alt</span><span class="sk">/</span></div><div class="scd">Show / hide shortcuts</div></div>
+    </div>
+    <div class="info-box">🛡 Screen capture protection via <strong>setContentProtection(true)</strong> — invisible to all screen recorders.</div>
+    <button class="btn primary" onclick="hideSC()" style="width:100%;justify-content:center;margin-top:12px">Close <span class="kbd">Esc</span></button>
+  </div>
+</div>
+
+<video id="sv" autoplay muted style="display:none"></video>
+<canvas id="sc" style="display:none"></canvas>
+
+<script>
+const isElectron = !!window.aura;
+
+// ── PROVIDER CONFIG ───────────────────────────────────────────────────────────
+const PROVIDERS = {
+  ollama:      { name:'Ollama',      icon:'🦙', needsKey:false },
+  groq:        { name:'Groq',        icon:'⚡', needsKey:true  },
+  gemini:      { name:'Gemini',      icon:'💎', needsKey:true  },
+  openrouter:  { name:'OpenRouter',  icon:'🔀', needsKey:true  },
+};
+
+let currentProvider = 'ollama';
+let currentApiKey   = '';
+let currentModel    = 'llama3.2';
+let activeTab       = 'ollama';
+
+function switchTab(p) {
+  activeTab = p;
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.provider-panel').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+p).classList.add('active');
+  document.getElementById('panel-'+p).classList.add('active');
+  document.getElementById('setup-err').style.display = 'none';
+  document.getElementById('setup-ok').style.display  = 'none';
+}
+
+function getTabConfig() {
+  const p = activeTab;
+  const keyEl = document.getElementById(p+'-key');
+  const modelEl = document.getElementById(p+'-model');
+  return {
+    provider: p,
+    apiKey:   keyEl ? keyEl.value.trim() : '',
+    model:    modelEl ? modelEl.value : '',
+  };
+}
+
+async function testAndSave() {
+  const cfg = getTabConfig();
+  const err = document.getElementById('setup-err');
+  const ok  = document.getElementById('setup-ok');
+  err.style.display = 'none'; ok.style.display = 'none';
+
+  if (PROVIDERS[cfg.provider].needsKey && !cfg.apiKey) {
+    err.textContent = 'Please enter your API key.';
+    err.style.display = 'block'; return;
+  }
+
+  // Test with a tiny message
+  setSt('on','TESTING…');
+  try {
+    const result = await callProvider({
+      provider: cfg.provider, apiKey: cfg.apiKey, model: cfg.model,
+      system: 'You are a helpful assistant.',
+      messages: [{ role:'user', content:[{ type:'text', text:'Say "OK" and nothing else.' }] }],
+      max_tokens: 10,
+    });
+    if (result.error) throw new Error(result.error);
+    applyConfig(cfg);
+    ok.textContent = `✓ Connected! Response: "${result.text?.slice(0,40)}"`;
+    ok.style.display = 'block';
+    setTimeout(hideSetup, 1200);
+  } catch(e) {
+    err.textContent = 'Connection failed: ' + e.message;
+    err.style.display = 'block';
+    setSt('','ERROR');
+  }
+}
+
+function saveWithoutTest() {
+  applyConfig(getTabConfig());
+  hideSetup();
+}
+
+function applyConfig(cfg) {
+  currentProvider = cfg.provider;
+  currentApiKey   = cfg.apiKey;
+  currentModel    = cfg.model;
+  if (isElectron) window.aura.setConfig(cfg);
+  const p = PROVIDERS[cfg.provider];
+  document.getElementById('provider-badge').textContent = p.icon + ' ' + p.name.toUpperCase();
+  setSt('on','READY');
+}
+
+function showSetup() { document.getElementById('setup-screen').style.display = 'flex'; }
+function hideSetup() { document.getElementById('setup-screen').style.display = 'none'; }
+
+function openLink(url) { if (isElectron) require('electron').shell?.openExternal(url); else window.open(url,'_blank'); }
+
+// On load — try to restore config or show setup
+window.addEventListener('DOMContentLoaded', async () => {
+  if (isElectron) {
+    const cfg = await window.aura.getConfig();
+    if (cfg && cfg.provider) {
+      currentProvider = cfg.provider; currentApiKey = cfg.apiKey; currentModel = cfg.model;
+      const p = PROVIDERS[cfg.provider];
+      if (p) document.getElementById('provider-badge').textContent = p.icon + ' ' + p.name.toUpperCase();
+      // If ollama (no key needed), hide setup directly
+      if (cfg.provider === 'ollama') { hideSetup(); return; }
+      // If cloud provider has key, hide setup
+      if (cfg.apiKey) { hideSetup(); return; }
+    }
+  } else {
+    // Non-electron: just use ollama by default
+    hideSetup();
+  }
+});
+
+// ── Electron IPC events ───────────────────────────────────────────────────────
+if (isElectron) {
+  window.aura.onShortcut((action, ...args) => {
+    const map = {
+      toggleMic, screenshot:takeScreenshot, analyzeNow,
+      stealth:toggleStealth, ghost:toggleGhost, compact:toggleCompact,
+      toggleAuto:()=>{ const t=document.getElementById('atgl'); t.classList.toggle('on'); autoAnalyze=t.classList.contains('on'); },
+      copyLast, copyTranscript, clear:clearAll,
+      showKeys:()=>ovVis?hideSC():showSC(),
+      mode:(i)=>setModeI(i),
+    };
+    if (map[action]) map[action](...args);
+  });
+  window.aura.onOpacityChange(val => {
+    const s=document.getElementById('ops'); s.value=val; s.style.setProperty('--val',val+'%');
+    document.getElementById('opv').textContent=val+'%';
+  });
+  window.aura.onProtectionStatus(s => updateProtBadge(s));
+  window.aura.getStatus().then(s => updateProtBadge(s.contentProtected));
+}
+
+function updateProtBadge(on) {
+  const b=document.getElementById('prot-badge');
+  b.className='prot-badge'+(on?'':' off');
+  document.getElementById('prot-text').textContent=on?'PROTECTED':'VISIBLE';
+}
+function toggleProtection() { if(isElectron) window.aura.toggleProtection(); }
+function setOpUI(v) {
+  const p=parseInt(v);
+  document.getElementById('opv').textContent=p+'%';
+  document.getElementById('ops').style.setProperty('--val',p+'%');
+  if(isElectron) window.aura.setOpacity(p); else document.body.style.opacity=p/100;
+}
+
+// ── MODES ─────────────────────────────────────────────────────────────────────
+const MODES = {
+  interview:{ label:'INTERVIEW', sys:`You are a real-time interview coaching assistant. The user is in a job interview right now.\nFor each question:\n- Confident suggested answer (3-5 sentences)\n- 2-3 key bullet points\n- Technical terms to mention\nBe direct. Use **bold** for key phrases. Under 150 words.` },
+  meeting:  { label:'MEETING',   sys:`You are a live meeting assistant. For each point:\n- One-sentence summary\n- Follow-up or action item\n- Important context\nUse **bold** for action items.` },
+  coding:   { label:'CODING',    sys:`You are a live coding assistant. Provide direct solutions, code if needed, and note edge cases. Be precise.` },
+  writing:  { label:'WRITING',   sys:`You are a live writing assistant. Improve phrasing, give examples, help expand ideas. Be creative and concise.` },
+  general:  { label:'GENERAL',   sys:`You are a helpful live AI assistant. Answer clearly, concisely, and accurately.` },
+};
+let mode='interview', autoAnalyze=true;
+let recog=null, isListening=false;
+let tBlocks=[], rBlocks=[];
+let tCnt=0, rCnt=0;
+let ato=null, lastSS=null;
+let isGhost=false, isCompact=false, isStealth=false, ovVis=false;
+
+function setSt(cls,txt){const p=document.getElementById('pill');p.className='pill '+(cls||'');document.getElementById('st').textContent=txt||'IDLE';}
+function toggleGhost(){isGhost=!isGhost;if(!isElectron)document.body.style.opacity=isGhost?'0.28':'';document.getElementById('gbtn').className='btn'+(isGhost?' am':'');document.getElementById('gbtn').innerHTML=isGhost?'👁 Ghost ON <span class="kbd">Alt+G</span>':'👁 Ghost <span class="kbd">Alt+G</span>';setSt(isGhost?'ghost':'',isGhost?'GHOST':'IDLE');}
+function toggleStealth(){isStealth=!isStealth;if(!isElectron)document.body.style.opacity=isStealth?'0.06':'';setSt(isStealth?'ghost':'',isStealth?'STEALTH':'IDLE');}
+function toggleCompact(){isCompact=!isCompact;document.body.classList.toggle('compact',isCompact);}
+
+// ── MIC ───────────────────────────────────────────────────────────────────────
+function toggleMic(){isListening?stopMic():startMic()}
+function startMic(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('Speech recognition requires Chrome/Edge or Electron.');return}
+  recog=new SR();recog.continuous=true;recog.interimResults=true;recog.lang='en-US';
+  recog.onstart=()=>{isListening=true;setSt('rec','LISTENING');document.getElementById('mbtn').innerHTML='⏹ Stop <span class="kbd">Alt+M</span>';document.getElementById('mbtn').className='btn danger';document.querySelectorAll('.wb').forEach(b=>b.classList.add('live'));hideE('t')};
+  recog.onresult=(e)=>{let fin='',int='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;e.results[i].isFinal?fin+=t:int+=t}if(fin){remInt();addT(fin.trim());if(autoAnalyze)sched(fin.trim())}if(int)showInt(int)};
+  recog.onerror=(e)=>{if(e.error!=='no-speech')setSt('','ERR:'+e.error)};
+  recog.onend=()=>{if(isListening)recog.start()};
+  recog.start();
+}
+function stopMic(){isListening=false;if(recog){recog.onend=null;recog.stop();recog=null}remInt();setSt('','IDLE');document.getElementById('mbtn').innerHTML='🎙 Listen <span class="kbd">Alt+M</span>';document.getElementById('mbtn').className='btn primary';document.querySelectorAll('.wb').forEach(b=>b.classList.remove('live'))}
+function showInt(txt){remInt();const p=document.getElementById('tp');const d=document.createElement('div');d.className='tb';d.id='int';d.innerHTML=`<div class="tts">● LIVE</div><div class="tt im">${esc(txt)}</div>`;p.appendChild(d);p.scrollTop=p.scrollHeight}
+function remInt(){const e=document.getElementById('int');if(e)e.remove()}
+function addT(txt,mn){tCnt++;document.getElementById('tc').textContent=tCnt;const p=document.getElementById('tp'),d=document.createElement('div');d.className='tb';const ts=now();d.innerHTML=`<div class="tts">${ts}</div><div class="tt${mn?' mn':''}">${esc(txt)}</div>`;p.appendChild(d);p.scrollTop=p.scrollHeight;tBlocks.push({ts,txt})}
+function addSSBlock(url){const p=document.getElementById('tp');hideE('t');const d=document.createElement('div');d.className='tb';d.innerHTML=`<div class="tts">${now()} — SCREENSHOT</div><img class="sthumb" src="${url}" onclick="this.style.maxHeight=this.style.maxHeight?'':'none'">`;p.appendChild(d);p.scrollTop=p.scrollHeight}
+
+// ── SCREENSHOT ────────────────────────────────────────────────────────────────
+async function takeScreenshot(){
+  setSt('on','CAPTURING…');document.getElementById('cap-status').textContent='📸 capturing…';
+  try{
+    let dataURL=null;
+    if(isElectron){
+      dataURL=await window.aura.captureScreenshot(0);
+      if(!dataURL){await showScreenPicker();return}
+    } else {
+      const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
+      const track=stream.getVideoTracks()[0];
+      const cap=new ImageCapture(track);
+      const bitmap=await cap.grabFrame();
+      const canvas=document.createElement('canvas');
+      canvas.width=bitmap.width;canvas.height=bitmap.height;
+      canvas.getContext('2d').drawImage(bitmap,0,0);
+      dataURL=canvas.toDataURL('image/png');
+      stream.getTracks().forEach(t=>t.stop());
+    }
+    if(!dataURL)throw new Error('No data');
+    lastSS=dataURL.replace(/^data:image\/\w+;base64,/,'');
+    addSSBlock(dataURL);hideE('t');setSt('on','CAPTURED');
+    document.getElementById('cap-status').textContent='✓ captured';
+    if(autoAnalyze)aiCall(document.getElementById('mi').value.trim()||'Analyze this screenshot.',lastSS);
+  }catch(err){setSt('','CAPTURE FAILED');document.getElementById('cap-status').textContent='⚠ failed';console.error(err)}
+}
+
+async function showScreenPicker(){
+  if(!isElectron)return;
+  const sources=await window.aura.getScreenSources();
+  const grid=document.getElementById('sources-grid');grid.innerHTML='';
+  sources.forEach(src=>{
+    const item=document.createElement('div');item.className='src-item';
+    item.innerHTML=`<img src="${src.thumbnail}"><div class="src-name">${src.name}</div>`;
+    item.onclick=async()=>{
+      hidePicker();
+      try{
+        const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{mandatory:{chromeMediaSource:'desktop',chromeMediaSourceId:src.id,minWidth:1280,maxWidth:3840,minHeight:720,maxHeight:2160}}});
+        const vid=document.createElement('video');vid.srcObject=stream;vid.play();
+        await new Promise(r=>{vid.onloadedmetadata=r;setTimeout(r,500)});
+        await new Promise(r=>setTimeout(r,200));
+        const canvas=document.createElement('canvas');canvas.width=vid.videoWidth||1920;canvas.height=vid.videoHeight||1080;
+        canvas.getContext('2d').drawImage(vid,0,0);
+        const dataURL=canvas.toDataURL('image/png');stream.getTracks().forEach(t=>t.stop());
+        lastSS=dataURL.replace(/^data:image\/\w+;base64,/,'');
+        addSSBlock(dataURL);hideE('t');setSt('on','CAPTURED');
+        if(autoAnalyze)aiCall('Analyze this screenshot.',lastSS);
+      }catch(e){setSt('','CAPTURE FAILED');console.error(e)}
+    };
+    grid.appendChild(item);
+  });
+  document.getElementById('picker').classList.add('vis');
+}
+function hidePicker(){document.getElementById('picker').classList.remove('vis')}
+
+// ── AI CALL ───────────────────────────────────────────────────────────────────
+function sched(txt){clearTimeout(ato);ato=setTimeout(()=>aiCall(txt,null),850)}
+
+// Build messages array — always include screenshot if present.
+// main.js handles per-provider image formatting (Ollama images[], OpenAI image_url, Gemini inlineData).
+function buildMessages(txt, ss) {
+  const content = [];
+  if (ss) {
+    // Always attach the image — main.js decides how to format it per provider
+    content.push({ type: 'image', source: { type: 'base64', media_type: 'image/png', data: ss } });
+  }
+  content.push({ type: 'text', text: txt || (ss ? 'Analyze this screenshot in detail.' : '') });
+  return [{ role: 'user', content }];
+}
+
+async function callProvider(payload) {
+  if (isElectron) return window.aura.callAI(payload);
+  // Browser fallback (limited, for testing)
+  throw new Error('Direct API calls from browser not supported — use Electron app');
+}
+
+async function aiCall(txt, ss) {
+  hideE('r');
+  const p=document.getElementById('rp');
+  const td=document.createElement('div');td.className='air';
+  td.innerHTML=`<div class="airh"><div class="aiav">AI</div><div class="ailbl">ANALYZING…</div></div><div class="ait"><div class="dots"><span></span><span></span><span></span></div><span>${PROVIDERS[currentProvider]?.name||'AI'} is thinking</span></div>`;
+  p.appendChild(td);p.scrollTop=p.scrollHeight;setSt('on','THINKING');
+
+  const ctx = document.getElementById('ctx').value.trim();
+  const sys = MODES[mode].sys + (ctx ? '\n\nContext: ' + ctx : '');
+
+  // Build the user text — include recent transcript context
+  let utxt = txt || (ss ? 'Analyze this screenshot in detail.' : '');
+  if (tBlocks.length > 1 && txt) {
+    const recent = tBlocks.slice(-5).map(b => b.txt).join(' | ');
+    utxt = `Recent conversation context: "${recent}"\nLatest: "${txt}"`;
+  }
+
+  const messages = buildMessages(utxt, ss);
+
+  try {
+    const result = await callProvider({
+      provider: currentProvider,
+      apiKey:   currentApiKey,
+      model:    currentModel,
+      system:   sys,
+      messages,
+      max_tokens: 1000,
+    });
+
+    if (result.error) throw new Error(result.error);
+
+    const ans = result.text || 'No response.';
+    rCnt++; document.getElementById('rc').textContent = rCnt;
+    const ts = now();
+    const modelShort = currentModel.split('/').pop().replace(':free','');
+    td.innerHTML = `<div class="airh"><div class="aiav">${PROVIDERS[currentProvider]?.icon||'AI'}</div><div class="ailbl">${MODES[mode].label} · ${modelShort}</div><div class="aits">${ts}</div></div><div class="aic">${fmt(ans)}</div>`;
+    rBlocks.push({ ts, txt: ans });
+    setSt('on','READY');
+    p.scrollTop = p.scrollHeight;
+
+  } catch(err) {
+    const tip = currentProvider === 'ollama'
+      ? 'Make sure Ollama is running: open a terminal and run "ollama serve"'
+      : 'Check your API key is correct';
+    td.innerHTML = `<div class="airh"><div class="aiav" style="border-color:var(--red);color:var(--red)">!</div><div class="ailbl" style="color:var(--red)">ERROR</div></div><div class="aic" style="color:var(--red);font-size:11px">${esc(err.message)}\n\n💡 ${tip}</div>`;
+    setSt('','ERROR');
+    console.error('aiCall error:', err);
+  }
+}
+
+// ── Modes / Input / Copy / Clear ──────────────────────────────────────────────
+function setMode(btn,m){document.querySelectorAll('.mb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');mode=m}
+function setModeI(i){const btns=document.querySelectorAll('.mb'),keys=Object.keys(MODES);if(btns[i]&&keys[i])setMode(btns[i],keys[i])}
+function hInp(e){if(e.key==='Enter'&&!e.altKey){e.preventDefault();analyzeManual()}if(e.key==='Enter'&&e.altKey){e.preventDefault();analyzeNow()}}
+async function analyzeManual(){const inp=document.getElementById('mi');const txt=inp.value.trim();if(!txt)return;inp.value='';addT('[Q] '+txt,true);hideE('t');hideE('r');await aiCall(txt,lastSS)}
+function analyzeNow(){const all=tBlocks.slice(-8).map(b=>b.txt).join('. ');if(!all&&!lastSS){alert('Nothing to analyze yet.');return}aiCall(all||'Analyze the screenshot.',lastSS)}
+function copyLast(){if(!rBlocks.length)return;navigator.clipboard.writeText(rBlocks.at(-1).txt).then(flash)}
+function copyTranscript(){if(!tBlocks.length)return;navigator.clipboard.writeText(tBlocks.map(b=>`[${b.ts}] ${b.txt}`).join('\n')).then(flash)}
+function flash(){document.querySelectorAll('.cbtn').forEach(b=>{const o=b.textContent;b.textContent='copied!';setTimeout(()=>b.textContent=o,1400)})}
+function clearAll(){tBlocks=[];rBlocks=[];tCnt=0;rCnt=0;lastSS=null;document.getElementById('tc').textContent='0';document.getElementById('rc').textContent='0';document.getElementById('tp').innerHTML='<div class="empty" id="te"><div class="ei">🎙</div><div class="et">No audio yet</div><div class="es">Alt+M to start listening</div></div>';document.getElementById('rp').innerHTML='<div class="empty" id="re"><div class="ei">🧠</div><div class="et">Waiting for input</div><div class="es">AI auto-analyzes as you speak</div></div>'}
+function showSC(){ovVis=true;document.getElementById('ov').classList.add('vis')}
+function hideSC(){ovVis=false;document.getElementById('ov').classList.remove('vis')}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmt(t){return esc(t).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^#{1,2}\s+(.+)$/gm,'<span class="h">$1</span>').replace(/^[-•*]\s+(.+)$/gm,'<span class="bul">$1</span>')}
+function now(){return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function hideE(p){const e=document.getElementById(p==='t'?'te':'re');if(e)e.style.display='none'}
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  const alt=e.altKey;
+  if(e.key==='Escape'){if(ovVis)hideSC();else if(document.getElementById('picker').classList.contains('vis'))hidePicker();else if(isCompact)toggleCompact();return}
+  if(!alt)return;
+  const map={'m':toggleMic,'s':takeScreenshot,'k':analyzeNow,'h':toggleStealth,'c':toggleCompact,'g':toggleGhost,
+    'a':()=>{const t=document.getElementById('atgl');t.classList.toggle('on');autoAnalyze=t.classList.contains('on')},
+    'l':copyLast,'t':copyTranscript,'/':()=>ovVis?hideSC():showSC(),
+    '1':()=>setModeI(0),'2':()=>setModeI(1),'3':()=>setModeI(2),'4':()=>setModeI(3),'5':()=>setModeI(4),
+    '[':()=>{const s=document.getElementById('ops');s.value=Math.max(5,+s.value-5);setOpUI(s.value)},
+    ']':()=>{const s=document.getElementById('ops');s.value=Math.min(100,+s.value+5);setOpUI(s.value)},
+    'Delete':clearAll};
+  const k=e.key.toLowerCase();if(map[k]){e.preventDefault();map[k]()}
+});
+</script>
+</body>
+</html>
